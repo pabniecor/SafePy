@@ -10,13 +10,13 @@ from .enums import Ecosystem, AnalysisStatus, VulnerabilitySeverity
 class Vulnerability:
     """Vulnerability information from OSV."""
     vulnerability_id: str
-    identifier_osv: str
+    osv_id: str
     description: str
     severity: Optional[str] = None
-    version_fixed: Optional[str] = None
+    fixed_version: Optional[str] = None
 
     def __hash__(self):
-        return hash(self.identifier_osv)
+        return hash(self.osv_id)
 
 
 @dataclass
@@ -38,7 +38,7 @@ class Dependency:
 @dataclass
 class AnalysisResult:
     """Results of a single analysis execution."""
-    result_id: Optional[int] = None
+    result_analysis_id: Optional[int] = None
     total_dependencies: int = 0
     vulnerable_dependencies: int = 0
     status: AnalysisStatus = AnalysisStatus.PENDING
@@ -53,9 +53,9 @@ class AnalysisResult:
 class Analysis:
     """Full analysis execution record."""
     analysis_id: Optional[int] = None
-    name: str = ""
-    filename: str = ""
-    analysis_date: datetime = field(default_factory=datetime.now)
+    analysis_name: str = ""
+    dependency_filename: str = ""
+    created_at: Optional[datetime] = None
     dependencies: list[Dependency] = field(default_factory=list)
     result: AnalysisResult = field(default_factory=AnalysisResult)
 

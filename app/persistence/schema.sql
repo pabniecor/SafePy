@@ -3,58 +3,54 @@
 
 CREATE TABLE IF NOT EXISTS Analysis (
     analysisId INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
-    nombre_archivo TEXT NOT NULL,
-    fecha_analisis TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    analysis_name TEXT NOT NULL,
+    dependency_filename TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS ResultadoAnalisis (
-    resultadoId INTEGER PRIMARY KEY AUTOINCREMENT,
-    total_dependencias INTEGER DEFAULT 0,
-    dependencias_vulns INTEGER DEFAULT 0,
-    estado TEXT DEFAULT 'pending',
-    observaciones TEXT,
+CREATE TABLE IF NOT EXISTS ResultAnalysis (
+    resultAnalysisId INTEGER PRIMARY KEY AUTOINCREMENT,
+    total_dependencies INTEGER DEFAULT 0,
+    vulnerable_dependencies INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'pending',
+    observations TEXT,
     analysisId INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (analysisId) REFERENCES Analysis(analysisId) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Dependencia (
-    dependenciaid INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS Dependency (
+    dependencyId INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
     version TEXT NOT NULL,
-    estado TEXT DEFAULT 'unknown',
+    status TEXT DEFAULT 'unknown',
     ecosystem TEXT DEFAULT 'PyPI',
     analysisId INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (analysisId) REFERENCES Analysis(analysisId) ON DELETE CASCADE,
-    UNIQUE(analysisId, nombre, version)
+    UNIQUE(analysisId, name, version)
 );
 
-CREATE TABLE IF NOT EXISTS Vulnerabilidad (
-    vulnerabilidadid INTEGER PRIMARY KEY AUTOINCREMENT,
-    identificador_osv TEXT UNIQUE NOT NULL,
-    descripcion TEXT,
-    severidad TEXT,
-    version_corregida TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS Vulnerability (
+    vulnerabilityId INTEGER PRIMARY KEY AUTOINCREMENT,
+    osv_id TEXT UNIQUE NOT NULL,
+    description TEXT,
+    severity TEXT,
+    fixed_version TEXT
 );
 
-CREATE TABLE IF NOT EXISTS DependenciaVulnerabilidad (
+CREATE TABLE IF NOT EXISTS DependencyVulnerability (
     depVulnid INTEGER PRIMARY KEY AUTOINCREMENT,
-    dependenciaid INTEGER NOT NULL,
-    vulnerabilidadid INTEGER NOT NULL,
+    dependencyId INTEGER NOT NULL,
+    vulnerabilityId INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (dependenciaid) REFERENCES Dependencia(dependenciaid) ON DELETE CASCADE,
-    FOREIGN KEY (vulnerabilidadid) REFERENCES Vulnerabilidad(vulnerabilidadid) ON DELETE CASCADE,
-    UNIQUE(dependenciaid, vulnerabilidadid)
+    FOREIGN KEY (dependencyId) REFERENCES Dependency(dependencyId) ON DELETE CASCADE,
+    FOREIGN KEY (vulnerabilityId) REFERENCES Vulnerability(vulnerabilityId) ON DELETE CASCADE,
+    UNIQUE(dependencyId, vulnerabilityId)
 );
 
 -- Indices for better query performance
-CREATE INDEX IF NOT EXISTS idx_analysis_fecha ON Analysis(fecha_analisis);
-CREATE INDEX IF NOT EXISTS idx_dependencia_analysisid ON Dependencia(analysisId);
-CREATE INDEX IF NOT EXISTS idx_dependencia_nombre ON Dependencia(nombre);
-CREATE INDEX IF NOT EXISTS idx_vulnerabilidad_osv ON Vulnerabilidad(identificador_osv);
-CREATE INDEX IF NOT EXISTS idx_depvuln_depid ON DependenciaVulnerabilidad(dependenciaid);
-CREATE INDEX IF NOT EXISTS idx_depvuln_vulnid ON DependenciaVulnerabilidad(vulnerabilidadid);
+CREATE INDEX IF NOT EXISTS idx_analysis_date_creation ON Analysis(created_at);
+CREATE INDEX IF NOT EXISTS idx_dependency_analysisid ON Dependency(analysisId);
+CREATE INDEX IF NOT EXISTS idx_dependency_name ON Dependency(name);
+CREATE INDEX IF NOT EXISTS idx_vulnerability_osv ON Vulnerability(osv_id);
+CREATE INDEX IF NOT EXISTS idx_depvuln_depid ON DependencyVulnerability(dependencyId);
+CREATE INDEX IF NOT EXISTS idx_depvuln_vulnid ON DependencyVulnerability(vulnerabilityId);
