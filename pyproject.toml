@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "safepy"
+version = "0.1.0"
+description = "Desktop application for detecting vulnerabilities in Python dependencies using OSV API"
+authors = [{name = "SafePy TFG", email = "pabniecor@alum.us.es"}]
+requires-python = ">=3.12"
+dependencies = [
+    "PySide6>=6.7.0",
+    "httpx[http2]>=0.27.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+build = [
+    "PyInstaller>=6.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "--cov=app --cov-report=html --cov-report=term-missing"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
