@@ -1,11 +1,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 .venv/
 venv/
 env/
 ENV/
+safePy_venv/
 
 .env
 .env.*
