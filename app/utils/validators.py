@@ -29,6 +29,12 @@ def parse_requirement_line(line: str) -> Optional[Tuple[str, str, str]]:
 
     if not line or line.startswith("#"):
         return None
+    
+    line = line.replace('"', '')
+    # Remove anything after a comma (e.g., extras or environment markers)
+    line = re.sub(r",.*", "", line)
+    # Remove [ ... ] including the brackets
+    line = re.sub(r"\[.*?\]", "", line)
 
     operators = ["~=", "==", ">=", "<=", "!=", ">", "<"]
     operator = "=="

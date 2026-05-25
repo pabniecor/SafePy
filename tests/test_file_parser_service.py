@@ -131,6 +131,39 @@ class TestFileParserService:
         assert len(deps) == 3
         assert any(d.name == "requests" for d in deps)
 
+    def test_parse_file_valid_2(self, parser, tmp_path):
+        """Test parsing valid pyproject.toml file."""
+        req_file = tmp_path / "pyproject.toml"
+        req_file.write_text("""
+                            dependencies = [
+                                "PySide6>=6.7.0",
+                                "httpx[http2]>=0.27.0",
+                                "pytest>=7.4.0",
+                                "pytest-cov>=4.1.0",
+                            ]
+                            """)
+
+        deps = parser.parse_file(req_file)
+        assert len(deps) == 4
+        assert any(d.name == "pytest-cov" for d in deps)
+        assert any(d.name == "httpx" for d in deps)
+
+    def test_parse_file_valid_3(self, parser, tmp_path):
+        """Test parsing valid requirements.txt file."""
+        req_file = tmp_path / "requirements.txt"
+        req_file.write_text("""
+                            PySide6>=6.7,<7.0
+                            httpx[http2]>=0.27,<1.0
+                            pytest>=8.0,<9.0
+                            pytest-cov>=4.1.0
+                            PyInstaller>=6.0,<7.0
+                            """)
+
+        deps = parser.parse_file(req_file)
+        assert len(deps) == 5
+        assert any(d.name == "PyInstaller" for d in deps)
+        assert any(d.name == "httpx" for d in deps)
+
     def test_parse_string_ecosystem(self, parser):
         """Test specifying ecosystem."""
         content = "requests==2.28.0"
