@@ -9,7 +9,7 @@ from .enums import Ecosystem, AnalysisStatus, VulnerabilitySeverity
 @dataclass
 class Vulnerability:
     """Vulnerability information from OSV."""
-    vulnerability_id: str
+    vulnerability_id: int
     osv_id: str
     description: str
     severity: Optional[str] = None
@@ -22,8 +22,9 @@ class Vulnerability:
 @dataclass
 class Dependency:
     """Package dependency."""
-    name: str
-    version: str
+    dependency_id: Optional[int] = None
+    name: str = ""
+    version: str = ""
     ecosystem: Ecosystem = Ecosystem.PYPI
     vulnerabilities: list[Vulnerability] = field(default_factory=list)
 

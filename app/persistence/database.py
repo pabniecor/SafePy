@@ -2,7 +2,7 @@
 
 import sqlite3
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Any, Generator
 from contextlib import contextmanager
 
 from app.config import DB_PATH
@@ -56,15 +56,17 @@ class Database:
         with open(schema_path, "r") as f:
             schema = f.read()
 
-        cursor = self._connection.cursor()
-        cursor.executescript(schema)
-        self._connection.commit()
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.executescript(schema)
+            conn.commit()
 
     @contextmanager
-    def get_connection(self):
+    def get_connection(self) -> Generator[sqlite3.Connection, None, None]:
         """Context manager for database operations."""
         if self._connection is None:
             self._connect()
+        assert self._connection is not None
         try:
             yield self._connection
         except sqlite3.Error as e:
