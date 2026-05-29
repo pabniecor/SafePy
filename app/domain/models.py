@@ -22,10 +22,10 @@ class Vulnerability:
 @dataclass
 class Dependency:
     """Package dependency."""
-    dependency_id: Optional[int] = None
     name: str = ""
     version: str = ""
     ecosystem: Ecosystem = Ecosystem.PYPI
+    dependency_id: int = 0
     vulnerabilities: list[Vulnerability] = field(default_factory=list)
 
     def add_vulnerability(self, vuln: Vulnerability) -> None:
@@ -39,10 +39,10 @@ class Dependency:
 @dataclass
 class AnalysisResult:
     """Results of a single analysis execution."""
-    result_analysis_id: Optional[int] = None
     total_dependencies: int = 0
     vulnerable_dependencies: int = 0
     status: AnalysisStatus = AnalysisStatus.PENDING
+    result_analysis_id: int = 0
     observations: Optional[str] = None
 
     def update_counts(self, dependencies: list[Dependency]) -> None:
@@ -53,9 +53,9 @@ class AnalysisResult:
 @dataclass
 class Analysis:
     """Full analysis execution record."""
-    analysis_id: Optional[int] = None
     analysis_name: str = ""
     dependency_filename: str = ""
+    analysis_id: int = 0
     created_at: Optional[datetime] = None
     dependencies: list[Dependency] = field(default_factory=list)
     result: AnalysisResult = field(default_factory=AnalysisResult)
