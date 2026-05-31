@@ -1,21 +1,18 @@
 """SafePy - Main entry point for the application."""
 
 import sys
-import logging
 from pathlib import Path
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from app.config import APP_NAME, WINDOW_TITLE
+from app.config import APP_NAME
+from app.persistence.database import Database
 from app.utils.exceptions import SafePyException
+from app.utils.logger import get_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def main():
@@ -23,7 +20,11 @@ def main():
     try:
         logger.info(f"Starting {APP_NAME}")
 
-        # TODO: Initialize application
+        # Initialize database
+        db = Database()
+        db.initialize()
+        logger.info("Database initialized successfully")
+
         # TODO: Create main window
         # TODO: Run event loop
 

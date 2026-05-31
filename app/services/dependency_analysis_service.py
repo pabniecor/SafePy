@@ -73,7 +73,16 @@ class DependencyAnalysisService:
 
                 # Link vulnerabilities to dependency
                 for vuln in osv_result.vulnerabilities:
-                    self.vulnerability_repo.link_to_dependency(dep_id, vuln.vulnerability_id)
+                    # Check if vulnerability already exists (cache lookup by osv_id)
+                    existing_vuln = self.vulnerability_repo.get_by_osv_id(vuln.osv_id)
+                    if existing_vuln:
+                        vuln_db_id = existing_vuln.vulnerability_id
+                    else:
+                        # Create new vulnerability and get database ID
+                        vuln_db_id = self.vulnerability_repo.create(vuln)
+
+                    # Link to dependency
+                    self.vulnerability_repo.link_to_dependency(dep_id, vuln_db_id)
                     dep.add_vulnerability(vuln)
 
                 analyzed_count += 1
