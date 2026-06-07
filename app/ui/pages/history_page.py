@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont
 from app.domain.models import Analysis
+from app.domain.enums import AnalysisStatus
 
 
 class HistoryPage(QWidget):
@@ -25,6 +26,7 @@ class HistoryPage(QWidget):
         super().__init__()
         self.analyses: list[Analysis] = []
         self.setup_ui()
+        self._update_empty_state()
 
     def setup_ui(self):
         """Setup UI components."""
@@ -52,9 +54,7 @@ class HistoryPage(QWidget):
         # Table for analyses
         self.table = QTableWidget()
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(
-            ["Fecha", "Nombre", "Estado", "Resumen"]
-        )
+        self.table.setHorizontalHeaderLabels(["Fecha", "Nombre", "Estado", "Resumen"])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
@@ -69,64 +69,79 @@ class HistoryPage(QWidget):
         self.empty_label.hide()
 
         self.setLayout(layout)
+        self.show()  # útil para que isVisible() en tests sea consistente
 
-    def set_analyses(self, analyses: list[Analysis]):
-        """Populate page with analyses list."""
+    def _update_empty_state(self):
+        is_empty = len(self.analyses) == 0
+        self.table.setVisible(not is_empty)
+        self.empty_label.setVisible(is_empty)
+
+    def set_analyses(self, analyses: Optional[list[Analysis]]):
         self.analyses = analyses or []
+        self.table.setRowCount(0)
 
         if not self.analyses:
-            self.table.setRowCount(0)
-            self.empty_label.show()
+            self._update_empty_state()
             return
 
-        self.empty_label.hide()
         self.table.setRowCount(len(self.analyses))
-
         for row, analysis in enumerate(self.analyses):
             self._populate_table_row(row, analysis)
+
+        self._update_empty_state()
 
     def _populate_table_row(self, row: int, analysis: Analysis):
         """Populate a single table row with analysis data."""
         # Date
         date_str = ""
-        if hasattr(analysis, 'created_at') and analysis.created_at:
-            # Format date
-            if hasattr(analysis.created_at, 'strftime'):
+        if hasattr(analysis, "created_at") and analysis.created_at:
+            if hasattr(analysis.created_at, "strftime"):
                 date_str = analysis.created_at.strftime("%Y-%m-%d %H:%M")
             else:
                 date_str = str(analysis.created_at)
-        date_item = QTableWidgetItem(date_str)
-        self.table.setItem(row, 0, date_item)
 
-        # Name
-        name_item = QTableWidgetItem(analysis.analysis_name or "Sin nombre")
-        name_item.setData(Qt.ItemDataRole.UserRole, analysis.analysis_id)  # Store ID for later
-        self.table.setItem(row, 1, name_item)
+        status_str = (
+            "Completado"
+            if analysis.result.status == AnalysisStatus.SUCCESS
+            else "Error"
+        )
 
-        # Status
-        status_str = "Completado" if analysis.result.status == "success" else "Error"
-        status_item = QTableWidgetItem(status_str)
-        self.table.setItem(row, 2, status_item)
-
-        # Summary (deps and vulns count)
         total_deps = len(analysis.dependencies) if analysis.dependencies else 0
         vuln_count = sum(
-            1 for dep in (analysis.dependencies or [])
-            if dep.vulnerabilities and len(dep.vulnerabilities) > 0
+            len(dep.vulnerabilities or [])
+            for dep in (analysis.dependencies or [])
         )
         summary = f"{total_deps} deps, {vuln_count} vulns"
-        summary_item = QTableWidgetItem(summary)
-        summary_item.setForeground(QBrush(QColor("#666666")))
-        self.table.setItem(row, 3, summary_item)
+
+        items = [
+            QTableWidgetItem(date_str),
+            QTableWidgetItem(analysis.analysis_name or "Sin nombre"),
+            QTableWidgetItem(status_str),
+            QTableWidgetItem(summary),
+        ]
+
+        items[3].setForeground(QBrush(QColor("#666666")))
+
+        for col, item in enumerate(items):
+            item.setData(Qt.ItemDataRole.UserRole, analysis.analysis_id)
+            item.setData(260, analysis.analysis_id)
+            self.table.setItem(row, col, item)
 
     def _on_table_item_clicked(self, item: QTableWidgetItem):
         """Handle table row click."""
         analysis_id = item.data(Qt.ItemDataRole.UserRole)
-        if analysis_id:
+
+        if analysis_id is None:
+            row = item.row()
+            fallback_item = self.table.item(row, 1)
+            if fallback_item:
+                analysis_id = fallback_item.data(Qt.ItemDataRole.UserRole)
+
+        if analysis_id is not None:
             self.analysis_selected.emit(analysis_id)
 
     def clear(self):
         """Reset page state."""
         self.analyses = []
         self.table.setRowCount(0)
-        self.empty_label.show()
+        self._update_empty_state()

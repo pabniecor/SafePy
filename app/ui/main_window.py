@@ -114,3 +114,7 @@ class MainWindow(QMainWindow):
         """Handle window close event."""
         self.thread_pool.waitForDone()
         event.accept()
+
+    def show_dialog(self, dialog):
+        dialog.exec()
+        return dialog

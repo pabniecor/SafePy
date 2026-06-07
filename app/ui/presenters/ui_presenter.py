@@ -165,7 +165,7 @@ class UIPresenter(QObject):
             # Create and show vulnerability detail dialog
             dialog = VulnerabilityDetailDialog(self.main_window)
             dialog.set_vulnerability_from_dependency(dependency)
-            dialog.exec()
+            self.main_window.show_dialog(dialog)
 
         except Exception as e:
             self.main_window.show_error(f"Error mostrando detalles: {str(e)}", critical=True)
