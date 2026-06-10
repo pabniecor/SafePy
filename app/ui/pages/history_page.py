@@ -20,7 +20,7 @@ class HistoryPage(QWidget):
     """Page displaying analysis history."""
 
     analysis_selected = Signal(int)  # analysis_id
-    back_clicked = Signal()
+    back_to_menu_clicked = Signal()
 
     def __init__(self):
         super().__init__()
@@ -38,7 +38,7 @@ class HistoryPage(QWidget):
         back_layout = QHBoxLayout()
         self.btn_back = QPushButton("← Volver al menú")
         self.btn_back.setMaximumWidth(200)
-        self.btn_back.clicked.connect(self.back_clicked.emit)
+        self.btn_back.clicked.connect(self.back_to_menu_clicked.emit)
         back_layout.addWidget(self.btn_back)
         back_layout.addStretch()
         layout.addLayout(back_layout)

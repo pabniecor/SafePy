@@ -64,22 +64,36 @@ def test_navigate_to_changes_page(presenter, main_window):
     assert main_window.PAGE_UPLOAD in presenter.navigation_stack
 
 
-def test_back_navigation(presenter, main_window):
-    """Test back button navigation."""
+def test_back_to_menu_navigation(presenter, main_window):
+    """Test back to menu button navigation."""
     presenter.navigate_to(main_window.PAGE_UPLOAD)
     presenter.navigate_to(main_window.PAGE_RESULTS)
 
     assert main_window.stacked_widget.currentIndex() == main_window.PAGE_RESULTS
 
-    presenter.on_back_clicked()
-    assert main_window.stacked_widget.currentIndex() == main_window.PAGE_UPLOAD
+    presenter.on_back_to_menu_clicked()
+    assert main_window.stacked_widget.currentIndex() == main_window.PAGE_HOME
+
+    presenter.on_back_to_menu_clicked()
+    assert main_window.stacked_widget.currentIndex() == main_window.PAGE_HOME
+
+    presenter.navigate_to(main_window.PAGE_HISTORY)
+
+    presenter.on_back_to_menu_clicked()
+    assert main_window.stacked_widget.currentIndex() == main_window.PAGE_HOME
+
+    presenter.navigate_to(main_window.PAGE_HISTORY)
+    presenter.navigate_to(main_window.PAGE_RESULTS)
+
+    presenter.on_back_to_menu_clicked()
+    assert main_window.stacked_widget.currentIndex() == main_window.PAGE_HOME
 
 
 def test_back_to_home_when_stack_empty(presenter, main_window):
     """Test back goes to home when navigation stack empty."""
     presenter.navigation_stack = [0]
-    presenter.on_back_clicked()
-    assert main_window.stacked_widget.currentIndex() == 0
+    presenter.on_back_to_menu_clicked()
+    assert main_window.stacked_widget.currentIndex() == main_window.PAGE_HOME
 
 
 def test_on_home_new_analysis_clicked(presenter, main_window):

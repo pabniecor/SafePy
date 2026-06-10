@@ -42,28 +42,28 @@ class UIPresenter(QObject):
             self.main_window.upload_page.analyze_clicked.connect(
                 self.on_upload_analyze_clicked
             )
-            self.main_window.upload_page.back_clicked.connect(self.on_back_clicked)
+            self.main_window.upload_page.back_to_menu_clicked.connect(self.on_back_to_menu_clicked)
 
         # ResultsPage connections
         if self.main_window.results_page:
             self.main_window.results_page.dependency_clicked.connect(
                 self.on_results_dependency_clicked
             )
-            self.main_window.results_page.back_clicked.connect(self.on_back_clicked)
+            self.main_window.results_page.back_to_menu_clicked.connect(self.on_back_to_menu_clicked)
 
         # HistoryPage connections
         if self.main_window.history_page:
             self.main_window.history_page.analysis_selected.connect(
                 self.on_history_analysis_selected
             )
-            self.main_window.history_page.back_clicked.connect(self.on_back_clicked)
+            self.main_window.history_page.back_to_menu_clicked.connect(self.on_back_to_menu_clicked)
 
     def navigate_to(self, page_index: int):
         """Navigate to a page and update navigation stack."""
         self.navigation_stack.append(page_index)
         self.main_window.show_page(page_index)
 
-    def on_back_clicked(self):
+    def on_back_to_menu_clicked(self):
         """Handle back button click - navigate to previous page."""
         if len(self.navigation_stack) > 1:
             self.navigation_stack = [0]
