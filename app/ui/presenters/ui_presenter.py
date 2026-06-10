@@ -66,11 +66,6 @@ class UIPresenter(QObject):
     def on_back_clicked(self):
         """Handle back button click - navigate to previous page."""
         if len(self.navigation_stack) > 1:
-            self.navigation_stack.pop()
-            page_index = self.navigation_stack[-1]
-            self.main_window.show_page(page_index)
-        else:
-            # Default back to home
             self.navigation_stack = [0]
             self.main_window.show_page(0)
 

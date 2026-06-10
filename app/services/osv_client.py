@@ -157,7 +157,7 @@ class OSVClient:
                 vulnerability_id=None, # type: ignore - will be set after caching
                 osv_id=osv_id,
                 description=vuln_dict.get("summary") or vuln_dict.get("details"),
-                severity=vuln_dict.get("severity"),
+                severity=self._extract_severity(vuln_dict),
                 fixed_version=self._extract_fixed_version(vuln_dict),
             )
 
@@ -175,6 +175,44 @@ class OSVClient:
                 continue
 
         return vulnerabilities
+
+    def _extract_severity(self, vuln_dict: dict) -> Optional[str]:
+        """Extract severity from OSV vulnerability data, regardless of where it appears."""
+        # 1) Search in database_specific.severity
+        database_specific = vuln_dict.get("database_specific", {})
+        severity = self._normalize_severity(database_specific.get("severity"))
+        if severity:
+            return severity
+            
+        affected = vuln_dict.get("affected", [])
+        # 2) Search in affected[*].ecosystem_specific.severity
+        for affected_pkg in affected:
+            ecosystem_specific = affected_pkg.get("ecosystem_specific", {})
+            severity = self._normalize_severity(ecosystem_specific.get("severity"))
+            if severity:
+                return severity
+
+        return None
+    
+    def _normalize_severity(self, value: str | None) -> Optional[str]:
+            if not value:
+                return None
+
+            value = str(value).strip().upper()
+
+            severity_map = {
+                "CRITICAL": "CRITICAL",
+                "HIGH": "HIGH",
+                "MEDIUM": "MEDIUM",
+                "MODERATE": "MEDIUM",
+                "LOW": "LOW",
+                "UNKNOWN": "UNKNOWN",
+                "INFO": "LOW",
+                "INFORMATIONAL": "LOW",
+                "NEGLIGIBLE": "LOW",
+            }
+
+            return severity_map.get(value)
 
     def _extract_fixed_version(self, vuln_dict: dict) -> Optional[str]:
         """Extract fixed version from vulnerability data if available.

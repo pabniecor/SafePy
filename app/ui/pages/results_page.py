@@ -1,5 +1,6 @@
 """Results page - Analysis results display."""
 
+import re
 from typing import Optional
 from PySide6.QtWidgets import (
     QLayout,
@@ -11,11 +12,20 @@ from PySide6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
     QFrame,
+    QAbstractItemView,
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont, QColor
 from app.domain.models import Analysis, Dependency
 
+SEMVER_RE = re.compile(
+    r"^v?\d+\.\d+\.\d+"
+    r"(?:[-._]?(?:alpha|beta|rc|pre|post|dev)\d*)?"
+    r"(?:\+[0-9A-Za-z.-]+)?$",
+    re.IGNORECASE,
+)
+
+COMMIT_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
 
 class ResultsPage(QWidget):
     """Page displaying analysis results."""
@@ -46,7 +56,7 @@ class ResultsPage(QWidget):
         # Back button
         back_layout = QHBoxLayout()
         self.btn_back = QPushButton("← Volver al menú")
-        self.btn_back.setMaximumWidth(100)
+        self.btn_back.setMaximumWidth(200)
         self.btn_back.clicked.connect(self.back_clicked.emit)
         back_layout.addWidget(self.btn_back)
         back_layout.addStretch()
@@ -84,6 +94,7 @@ class ResultsPage(QWidget):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.itemClicked.connect(self._on_table_item_clicked)
         layout.addWidget(self.table)
 
@@ -177,6 +188,7 @@ class ResultsPage(QWidget):
 
         # Version
         version_item = QTableWidgetItem(dependency.version or "")
+        version_item.setData(Qt.ItemDataRole.UserRole, dependency)  # Store dependency object
         self.table.setItem(row, 1, version_item)
 
         # Severity and recommendation
@@ -190,11 +202,13 @@ class ResultsPage(QWidget):
             value_font = QFont()
             value_font.setWeight(QFont.Weight.Bold)
             severity_item.setFont(value_font)
+            severity_item.setData(Qt.ItemDataRole.UserRole, dependency)  # Store dependency object
             self.table.setItem(row, 2, severity_item)
 
             # Recommendation (simple - show fixed version if available)
             recommendation = self._get_recommendation(dependency)
             recommendation_item = QTableWidgetItem(recommendation)
+            recommendation_item.setData(Qt.ItemDataRole.UserRole, dependency)  # Store dependency object
             self.table.setItem(row, 3, recommendation_item)
 
             # Highlight row to indicate it's clickable
@@ -222,20 +236,77 @@ class ResultsPage(QWidget):
                 return sev
         return "UNKNOWN"
 
+    def _is_probable_version(self, value: str) -> bool:
+        """Detect if a string looks like a package version."""
+        if not value:
+            return False
+
+        value = value.strip()
+
+        if SEMVER_RE.match(value):
+            return True
+
+        # Other common version formats like 1.2, 2024.1, 2.0rc1, 1.0.post1
+        if re.match(r"^v?\d+(?:\.\d+){1,3}(?:[A-Za-z0-9._+-]*)?$", value):
+            return True
+
+        return False
+
+
+    def _is_probable_commit(self, value: str) -> bool:
+        """Detect if a string looks like a git commit hash."""
+        if not value:
+            return False
+        return bool(COMMIT_RE.match(value.strip()))
+
+
     def _get_recommendation(self, dependency: Dependency) -> str:
-        """Get recommendation text for a dependency."""
+        """Get user-friendly recommendation text for a dependency."""
         if not dependency.vulnerabilities:
             return "Actualizado"
 
-        # Check for fixed versions across vulnerabilities
         fixed_versions = set()
+        fixed_commits = set()
+
         for vuln in dependency.vulnerabilities:
-            if hasattr(vuln, 'fixed_version') and vuln.fixed_version:
-                fixed_versions.add(vuln.fixed_version)
+            fixed_value = getattr(vuln, "fixed_version", None)
+            if not fixed_value:
+                continue
+
+            fixed_value = str(fixed_value).strip()
+
+            if self._is_probable_version(fixed_value):
+                fixed_versions.add(fixed_value)
+            elif self._is_probable_commit(fixed_value):
+                fixed_commits.add(fixed_value)
+            else:
+                fixed_commits.add(fixed_value)
 
         if fixed_versions:
-            return f"Actualizar a: {', '.join(sorted(fixed_versions))}"
-        return "Revisar vulnerabilidades"
+            versions_sorted = sorted(fixed_versions)
+            if len(versions_sorted) == 1:
+                return f"Actualizar a la versión {versions_sorted[0]} o superior."
+            return (
+                "Actualizar a una versión igual o superior de estas versiones: "
+                + ", ".join(versions_sorted)
+                + "."
+            )
+
+        if fixed_commits:
+            short_commits = sorted(
+                {c[:10] + "..." if len(c) > 10 else c for c in fixed_commits}
+            )
+            if len(short_commits) == 1:
+                return (
+                    f"OSV solo indica una corrección mediante commit ({short_commits[0]})."
+                    "Recomendable actualizar a la última versión estable."
+                )
+            return (
+                "OSV solo proporciona correcciones mediante commits. "
+                "Recomendable actualizar a la última versión estable."
+            )
+
+        return "Revisa los detalles de las vulnerabilidades."
 
     def _on_table_item_clicked(self, item: QTableWidgetItem):
         """Handle table item click."""

@@ -24,6 +24,7 @@ class Dependency:
     """Package dependency."""
     name: str = ""
     version: str = ""
+    status: str = "unknown"
     ecosystem: Ecosystem = Ecosystem.PYPI
     dependency_id: int = 0
     vulnerabilities: list[Vulnerability] = field(default_factory=list)

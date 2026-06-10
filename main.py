@@ -3,11 +3,14 @@
 import sys
 from pathlib import Path
 
+from app.utils.resource import resource_path
+
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 from app.config import APP_NAME
 from app.persistence.database import Database
 from app.utils.exceptions import SafePyException
@@ -34,6 +37,10 @@ def main():
 
         # Create Qt application
         app = QApplication(sys.argv)
+
+        # Set application icon
+        icon_path = resource_path("app/ui/styles/icon.ico")
+        app.setWindowIcon(QIcon(str(icon_path)))
 
         # Create main window
         main_window = MainWindow()

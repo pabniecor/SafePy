@@ -35,7 +35,7 @@ Además, incorpora almacenamiento local para conservar el historial de análisis
 ```text
 app/
 ├── ui/
-├── controllers/
+├── presenters/
 ├── services/
 ├── persistence/
 ├── domain/

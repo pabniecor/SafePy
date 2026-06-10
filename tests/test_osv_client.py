@@ -39,7 +39,6 @@ def sample_osv_response():
                 "id": "GHSA-1234-5678-9abc",
                 "summary": "SQL Injection in requests",
                 "details": "A SQL injection vulnerability was discovered in requests library",
-                "severity": "HIGH",
                 "published": "2023-01-01T00:00:00Z",
                 "modified": "2023-06-01T00:00:00Z",
                 "aliases": ["CVE-2023-1234"],
@@ -55,6 +54,9 @@ def sample_osv_response():
                                 ],
                             }
                         ],
+                        "ecosystem_specific": {
+                            "severity": "HIGH"
+                        },
                     }
                 ],
             },
@@ -62,9 +64,11 @@ def sample_osv_response():
                 "id": "GHSA-9876-5432-1def",
                 "summary": "XSS in requests",
                 "details": "A cross-site scripting vulnerability",
-                "severity": "MEDIUM",
                 "published": "2023-02-01T00:00:00Z",
                 "modified": "2023-07-01T00:00:00Z",
+                "database_specific": {
+                    "severity": "MODERATE",
+                },
                 "affected": [
                     {
                         "package": {"name": "requests", "ecosystem": "PyPI"},
@@ -107,6 +111,8 @@ class TestOSVClient:
             assert len(result.vulnerabilities) == 2
             assert result.vulnerabilities[0].osv_id == "GHSA-1234-5678-9abc"
             assert result.vulnerabilities[0].severity == "HIGH"
+            assert result.vulnerabilities[1].osv_id == "GHSA-9876-5432-1def"
+            assert result.vulnerabilities[1].severity == "MEDIUM"
 
     def test_query_package_empty_response(self, osv_client):
         """Test query with no vulnerabilities."""

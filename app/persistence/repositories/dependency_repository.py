@@ -18,12 +18,12 @@ class DependencyRepository:
         """Create new dependency record, return ID."""
         try:
             query = """
-                INSERT INTO Dependency (name, version, ecosystem, analysisId)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO Dependency (name, version, status, ecosystem, analysisId)
+                VALUES (?, ?, ?, ?, ?)
             """
             self.db.execute(
                 query,
-                (dependency.name, dependency.version, dependency.ecosystem.value, analysis_id),
+                (dependency.name, dependency.version, dependency.status, dependency.ecosystem.value, analysis_id),
             )
 
             result = self.db.fetch_scalar("SELECT last_insert_rowid()")
@@ -35,7 +35,7 @@ class DependencyRepository:
         """Retrieve dependency by ID."""
         try:
             query = """
-                SELECT dependencyId, name, version, ecosystem
+                SELECT dependencyId, name, version, status, ecosystem
                 FROM Dependency
                 WHERE dependencyId = ?
             """
@@ -46,6 +46,7 @@ class DependencyRepository:
             dependency = Dependency(
                 name=row["name"],
                 version=row["version"],
+                status=row["status"],
                 ecosystem=Ecosystem(row["ecosystem"]),
             )
             return dependency
@@ -56,7 +57,7 @@ class DependencyRepository:
         """Get all dependencies for an analysis."""
         try:
             query = """
-                SELECT dependencyId, name, version, ecosystem
+                SELECT dependencyId, name, version, status, ecosystem
                 FROM Dependency
                 WHERE analysisId = ?
                 ORDER BY name
@@ -66,6 +67,7 @@ class DependencyRepository:
                 Dependency(
                     name=row["name"],
                     version=row["version"],
+                    status=row["status"],
                     ecosystem=Ecosystem(row["ecosystem"]),
                 )
                 for row in rows
@@ -78,7 +80,7 @@ class DependencyRepository:
         """Retrieve all dependencies."""
         try:
             query = """
-                SELECT dependencyId, name, version, ecosystem
+                SELECT dependencyId, name, version, status, ecosystem
                 FROM Dependency
                 ORDER BY name
             """
@@ -87,6 +89,7 @@ class DependencyRepository:
                 Dependency(
                     name=row["name"],
                     version=row["version"],
+                    status=row["status"],
                     ecosystem=Ecosystem(row["ecosystem"]),
                 )
                 for row in rows
@@ -100,12 +103,12 @@ class DependencyRepository:
         try:
             query = """
                 UPDATE Dependency
-                SET name = ?, version = ?, ecosystem = ?
+                SET name = ?, version = ?, status = ?, ecosystem = ?
                 WHERE dependencyId = ?
             """
             self.db.execute(
                 query,
-                (dependency.name, dependency.version, dependency.ecosystem.value, dependency_id),
+                (dependency.name, dependency.version, dependency.status, dependency.ecosystem.value, dependency_id),
             )
         except Exception as e:
             raise DatabaseError(f"Failed to update dependency: {e}")

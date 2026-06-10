@@ -35,7 +35,7 @@ class UploadPage(QWidget):
         # Back button
         back_layout = QHBoxLayout()
         self.btn_back = QPushButton("← Volver al menú")
-        self.btn_back.setMaximumWidth(100)
+        self.btn_back.setMaximumWidth(200)
         self.btn_back.clicked.connect(self.back_clicked.emit)
         back_layout.addWidget(self.btn_back)
         back_layout.addStretch()

@@ -1,6 +1,7 @@
 """Main application window with page navigation and threading."""
 
 from pathlib import Path
+from typing import Optional, TYPE_CHECKING
 from PySide6.QtWidgets import (
     QMainWindow,
     QStackedWidget,
@@ -11,7 +12,14 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QThreadPool, QTimer
 from PySide6.QtGui import QIcon
+from app.utils.resource import resource_path
 
+if TYPE_CHECKING:
+    from app.ui.pages.home_page import HomePage
+    from app.ui.pages.upload_page import UploadPage
+    from app.ui.pages.results_page import ResultsPage
+    from app.ui.pages.history_page import HistoryPage
+    from app.ui.presenters.ui_presenter import UIPresenter
 
 class MainWindow(QMainWindow):
     """Main application window managing pages, navigation, and worker threads."""
@@ -25,6 +33,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("SafePy - Detector de Vulnerabilidades en Dependencias Python")
+        self.setWindowIcon(QIcon(str(resource_path("app/ui/styles/icon.ico"))))
         self.setGeometry(100, 100, 1000, 700)
 
         self.thread_pool = QThreadPool()
@@ -43,14 +52,14 @@ class MainWindow(QMainWindow):
         self.status_timer.setSingleShot(True)
         self.status_timer.timeout.connect(self._clear_status)
 
-        # Pages (will be set by MainWindow.setup_pages)
-        self.home_page = None
-        self.upload_page = None
-        self.results_page = None
-        self.history_page = None
+        # Pages
+        self.home_page: Optional["HomePage"] = None
+        self.upload_page: Optional["UploadPage"] = None
+        self.results_page: Optional["ResultsPage"] = None
+        self.history_page: Optional["HistoryPage"] = None
 
-        # Presenter (will be initialized after pages)
-        self.presenter = None
+        # Presenter
+        self.presenter: Optional["UIPresenter"] = None
 
         self._load_stylesheet()
 
