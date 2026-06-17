@@ -44,15 +44,9 @@ app/
 
 La aplicación se organiza de forma modular para separar la interfaz, la lógica de análisis, el acceso a datos y las utilidades auxiliares, lo que facilita su mantenimiento y evolución.
 
-## Uso de la aplicación
-
-Si únicamente se desea utilizar la aplicación, no es necesario clonar el repositorio completo ni instalar Python o las dependencias del proyecto. Basta con descargar la versión distribuida de la aplicación y ejecutar el archivo empaquetado incluido en la carpeta `dist/`.
-
-En otras palabras, para el usuario final solo es necesario disponer del contenido distribuido en `dist/`, ya que allí se encuentra la aplicación lista para ejecutarse.
-
 ## Instalación para desarrollo
 
-Los pasos siguientes son necesarios únicamente si se desea trabajar sobre el código fuente, modificar el proyecto o contribuir al desarrollo:
+Los pasos siguientes son necesarios únicamente si se desea utilizar la aplicación o contribuir al desarrollo:
 
 1. Clonar el repositorio.
 2. Crear y activar un entorno virtual.
