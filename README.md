@@ -44,6 +44,12 @@ app/
 
 La aplicación se organiza de forma modular para separar la interfaz, la lógica de análisis, el acceso a datos y las utilidades auxiliares, lo que facilita su mantenimiento y evolución.
 
+## Uso de la aplicación
+
+Si únicamente se desea utilizar la aplicación, no es necesario clonar el repositorio completo ni instalar Python o las dependencias del proyecto. Basta con descargar la versión distribuida de la aplicación, extraer el contenido y ejecutar el archivo empaquetado incluido en el archivo `SafePy.rar`.
+
+En otras palabras, para el usuario final solo es necesario disponer del contenido distribuido en `SafePy.rar`, ya que allí se encuentra la aplicación lista para ejecutarse.
+
 ## Instalación para desarrollo
 
 Los pasos siguientes son necesarios únicamente si se desea utilizar la aplicación o contribuir al desarrollo:
@@ -64,13 +70,13 @@ python main.py
 
 ## Empaquetado
 
-Si se desea generar un ejecutable a partir del código fuente, puede utilizarse PyInstaller para empaquetar la aplicación:
+Si se desea generar de nuevo el ejecutable a partir del código fuente, puede utilizarse PyInstaller para empaquetar la aplicación:
 
 ```bash
 pyinstaller safepy.spec
 ```
 
-Este paso está orientado al desarrollo y distribución del proyecto, y no es necesario para el uso habitual de la aplicación por parte del usuario final.
+El ejecutable aparecerá en la carpeta `dist/`. Este paso está orientado al desarrollo y distribución del proyecto, y no es necesario para el uso habitual de la aplicación por parte del usuario final.
 
 ## Estado del proyecto
 
