@@ -6,7 +6,11 @@ from pathlib import Path
 from app.services.history_service import HistoryService
 from app.persistence.repositories.analysis_repository import AnalysisRepository
 from app.persistence.repositories.result_repository import ResultRepository
+from app.persistence.repositories.dependency_repository import DependencyRepository
+from app.persistence.repositories.vulnerability_repository import VulnerabilityRepository
 from app.domain.models import Analysis, AnalysisResult, AnalysisStatus
+from app.domain.enums import Ecosystem
+from app.domain.models import Dependency, Vulnerability
 
 
 @pytest.fixture
@@ -14,6 +18,8 @@ def sample_analyses(temp_db):
     """Create sample analyses in database."""
     analysis_repo = AnalysisRepository(temp_db)
     result_repo = ResultRepository(temp_db)
+    dependency_repo = DependencyRepository(temp_db)
+    vulnerability_repo = VulnerabilityRepository(temp_db)
 
     analysis_ids = []
     for i in range(3):
@@ -34,6 +40,21 @@ def sample_analyses(temp_db):
             analysis_id,
         )
 
+        dep_id = dependency_repo.create(
+            Dependency(name=f"pkg{i}", version="1.0.0", ecosystem=Ecosystem.PYPI),
+            analysis_id,
+        )
+        vuln_id = vulnerability_repo.create(
+            Vulnerability(
+                vulnerability_id=0,
+                osv_id=f"GHSA-test-{i}",
+                description="Test vuln",
+                severity="HIGH",
+                fixed_version="2.0.0",
+            )
+        )
+        vulnerability_repo.link_to_dependency(dep_id, vuln_id)
+
     return analysis_ids
 
 
@@ -47,6 +68,7 @@ class TestHistoryService:
 
         assert len(analyses) >= 3
         assert all(isinstance(a, Analysis) for a in analyses)
+        assert all(len(a.dependencies) == 1 for a in analyses[:3])
 
     def test_get_analysis_by_id(self, temp_db, sample_analyses):
         """Test getting specific analysis."""
@@ -58,6 +80,9 @@ class TestHistoryService:
         assert analysis is not None
         assert analysis.analysis_id == analysis_id
         assert analysis.result is not None
+        assert len(analysis.dependencies) == 1
+        assert len(analysis.dependencies[0].vulnerabilities) == 1
+        assert analysis.dependencies[0].dependency_id != 0
 
     def test_get_analysis_not_found(self, temp_db):
         """Test getting non-existent analysis raises error."""

@@ -44,6 +44,7 @@ class DependencyRepository:
                 return None
 
             dependency = Dependency(
+                dependency_id=row["dependencyId"],
                 name=row["name"],
                 version=row["version"],
                 status=row["status"],
@@ -65,6 +66,7 @@ class DependencyRepository:
             rows = self.db.fetch_all(query, (analysis_id,))
             dependencies = [
                 Dependency(
+                    dependency_id=row["dependencyId"],
                     name=row["name"],
                     version=row["version"],
                     status=row["status"],

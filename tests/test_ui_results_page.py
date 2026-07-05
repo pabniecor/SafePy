@@ -127,8 +127,10 @@ def test_set_analysis_updates_summary(results_page):
 
     results_page.set_analysis(analysis)
 
-    # Verify summary was updated (2 deps, 1 vuln)
+    # Verify summary was updated (2 deps, 1 vulnerability, 1 vulnerable dependency)
     assert results_page.table.rowCount() == 2
+    assert results_page.total_vulns_card.layout().itemAt(1).widget().text() == "1"
+    assert results_page.vulnerable_deps_card.layout().itemAt(1).widget().text() == "1"
 
 
 def test_set_analysis_with_notes(results_page):

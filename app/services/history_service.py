@@ -31,13 +31,8 @@ class HistoryService:
         """
         logger.info("Retrieving all analyses")
         analyses = self.analysis_repo.get_all()
-
-        # Populate result for each analysis
         for analysis in analyses:
-            result = self.result_repo.get_by_analysis(analysis.analysis_id)
-            if result:
-                analysis.result = result
-
+            self._hydrate_analysis(analysis)
         return analyses
 
     def get_analysis(self, analysis_id: int) -> Analysis:
@@ -59,18 +54,7 @@ class HistoryService:
         if not analysis:
             raise ValueError(f"Analysis {analysis_id} not found")
 
-        # Populate result
-        result = self.result_repo.get_by_analysis(analysis_id)
-        if result:
-            analysis.result = result
-
-        # Populate dependencies with vulnerabilities
-        dependencies = self.dependency_repo.get_by_analysis(analysis_id)
-        for dep in dependencies:
-            vulns = self.vulnerability_repo.get_by_dependency(dep.dependency_id)
-            dep.vulnerabilities = vulns
-
-        analysis.dependencies = dependencies
+        self._hydrate_analysis(analysis)
         return analysis
 
     def get_recent(self, limit: int = 20) -> list[Analysis]:
@@ -85,15 +69,23 @@ class HistoryService:
         """
         logger.info(f"Retrieving {limit} recent analyses")
         all_analyses = self.analysis_repo.get_all()
-
-        # Populate results
         for analysis in all_analyses:
-            result = self.result_repo.get_by_analysis(analysis.analysis_id)
-            if result:
-                analysis.result = result
+            self._hydrate_analysis(analysis)
 
         # Return only the most recent ones
         return all_analyses[:limit]
+
+    def _hydrate_analysis(self, analysis: Analysis) -> None:
+        """Attach result, dependencies and vulnerabilities to an analysis."""
+        result = self.result_repo.get_by_analysis(analysis.analysis_id)
+        if result:
+            analysis.result = result
+
+        dependencies = self.dependency_repo.get_by_analysis(analysis.analysis_id)
+        for dep in dependencies:
+            dep.vulnerabilities = self.vulnerability_repo.get_by_dependency(dep.dependency_id)
+
+        analysis.dependencies = dependencies
 
     def delete_analysis(self, analysis_id: int) -> None:
         """

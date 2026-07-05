@@ -1,6 +1,6 @@
 """Datetime utilities for formatting and parsing."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def format_datetime(dt: datetime) -> str:
@@ -82,3 +82,16 @@ def parse_datetime(dt_str: str) -> datetime:
         return datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
     except ValueError as e:
         raise ValueError(f"Invalid datetime format: {dt_str}") from e
+
+
+def parse_sqlite_timestamp(dt_str: str) -> datetime:
+    """
+    Parse a SQLite timestamp and convert naive values from UTC to local time.
+
+    SQLite CURRENT_TIMESTAMP stores UTC without timezone information, so we
+    attach UTC before converting to the system's local timezone.
+    """
+    dt = datetime.fromisoformat(dt_str)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone()

@@ -20,7 +20,9 @@ QStatusBar {
     background-color: #E8F4F8;
     color: #333333;
     border-top: 1px solid #CCCCCC;
-    padding: 5px;
+    padding: 8px 10px;
+    min-height: 20px;
+    font-size: 10pt;
 }
 
 /* ============== Buttons ============== */

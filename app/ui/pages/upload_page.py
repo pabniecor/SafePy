@@ -158,6 +158,7 @@ class UploadPage(QWidget):
         """Handle analyze button click."""
         if not self.validate_inputs():
             return
+        self.set_analysis_running(True)
         self.analyze_clicked.emit(self.selected_file, self.name_input.text())
 
     def validate_inputs(self) -> bool:
@@ -190,3 +191,9 @@ class UploadPage(QWidget):
         self.name_input.clear()
         self.file_label.setText("Archivo: (ninguno seleccionado)")
         self.message_label.setText("")
+        self.set_analysis_running(False)
+
+    def set_analysis_running(self, running: bool):
+        """Enable or disable the start button while analysis is running."""
+        self.btn_start.setEnabled(not running)
+        self.btn_start.setText("Analizando..." if running else "Iniciar análisis")

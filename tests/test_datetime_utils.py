@@ -1,12 +1,13 @@
 """Tests for datetime utility functions."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.utils.datetime_utils import (
     format_datetime,
     format_date_only,
     time_since,
     parse_datetime,
+    parse_sqlite_timestamp,
 )
 
 
@@ -231,3 +232,18 @@ class TestDatetimeIntegration:
         assert "14:30:45" in full
         assert "14:30:45" not in date_only
         assert full.startswith(date_only)
+
+
+class TestParseSqliteTimestamp:
+    """Tests for parse_sqlite_timestamp function."""
+
+    def test_parse_sqlite_timestamp_returns_timezone_aware_datetime(self):
+        """SQLite timestamps should become timezone-aware."""
+        result = parse_sqlite_timestamp("2026-07-05 08:00:00")
+        assert result.tzinfo is not None
+
+    def test_parse_sqlite_timestamp_converts_utc_to_local(self):
+        """SQLite UTC timestamps should convert to the local timezone."""
+        result = parse_sqlite_timestamp("2026-07-05 08:00:00")
+        expected = datetime(2026, 7, 5, 8, 0, 0, tzinfo=timezone.utc).astimezone()
+        assert result == expected

@@ -99,6 +99,8 @@ class UIPresenter(QObject):
             # Validate inputs
             if not file_path or not analysis_name:
                 self.main_window.show_error("Por favor selecciona un archivo y nombre", critical=False)
+                if self.main_window.upload_page:
+                    self.main_window.upload_page.set_analysis_running(False)
                 return
 
             # Show loading state
@@ -132,6 +134,8 @@ class UIPresenter(QObject):
 
     def _on_analysis_finished(self, analysis: Analysis):
         """Analysis worker completed successfully."""
+        if self.main_window.upload_page:
+            self.main_window.upload_page.set_analysis_running(False)
         self.current_analysis = analysis
         self.current_analysis_id = analysis.analysis_id if hasattr(analysis, 'analysis_id') else None
 
@@ -145,6 +149,8 @@ class UIPresenter(QObject):
 
     def _on_analysis_error(self, error_message: str):
         """Analysis worker encountered an error."""
+        if self.main_window.upload_page:
+            self.main_window.upload_page.set_analysis_running(False)
         self.main_window.show_error(f"Error en análisis: {error_message}", critical=True)
 
     # ==================== ResultsPage Handlers ====================

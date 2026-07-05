@@ -78,9 +78,15 @@ class ResultsPage(QWidget):
         self.deps_card = self._create_summary_card("Dependencias", "0")
         summary_layout.addWidget(self.deps_card)
 
-        # Vulnerabilities card
-        self.vulns_card = self._create_summary_card("Vulnerabilidades", "0")
-        summary_layout.addWidget(self.vulns_card)
+        # Vulnerable dependencies card
+        self.vulnerable_deps_card = self._create_summary_card("Dependencias vulnerables", "0")
+        self.vulnerable_dependencies_card = self.vulnerable_deps_card
+        summary_layout.addWidget(self.vulnerable_deps_card)
+
+        # Total vulnerabilities card
+        self.total_vulns_card = self._create_summary_card("Vulnerabilidades", "0")
+        self.vulns_card = self.total_vulns_card
+        summary_layout.addWidget(self.total_vulns_card)
 
         summary_layout.addStretch()
         layout.addLayout(summary_layout)
@@ -143,14 +149,16 @@ class ResultsPage(QWidget):
 
         # Count dependencies and vulnerabilities
         total_deps = len(analysis.dependencies) if analysis.dependencies else 0
-        vuln_count = sum(
+        total_vulns = sum(len(dep.vulnerabilities or []) for dep in (analysis.dependencies or []))
+        vulnerable_deps = sum(
             1 for dep in (analysis.dependencies or [])
             if dep.vulnerabilities and len(dep.vulnerabilities) > 0
         )
 
         # Update summary cards
         self._update_summary_card(self.deps_card, str(total_deps))
-        self._update_summary_card(self.vulns_card, str(vuln_count))
+        self._update_summary_card(self.total_vulns_card, str(total_vulns))
+        self._update_summary_card(self.vulnerable_deps_card, str(vulnerable_deps))
 
         # Populate table
         self.table.setRowCount(total_deps)
@@ -319,5 +327,6 @@ class ResultsPage(QWidget):
         self.current_analysis = None
         self.table.setRowCount(0)
         self._update_summary_card(self.deps_card, "0")
-        self._update_summary_card(self.vulns_card, "0")
+        self._update_summary_card(self.total_vulns_card, "0")
+        self._update_summary_card(self.vulnerable_deps_card, "0")
         self.notes_label.setText("")

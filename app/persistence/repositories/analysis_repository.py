@@ -1,11 +1,11 @@
 """Repository for Analysis entity."""
 
-from datetime import datetime
 from typing import Optional
 
 from app.domain.models import Analysis
 from app.persistence.database import Database
 from app.utils.exceptions import DatabaseError
+from app.utils.datetime_utils import parse_sqlite_timestamp
 
 
 class AnalysisRepository:
@@ -44,7 +44,7 @@ class AnalysisRepository:
                 analysis_id=row["analysisId"],
                 analysis_name=row["analysis_name"],
                 dependency_filename=row["dependency_filename"],
-                created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
+                created_at=parse_sqlite_timestamp(row["created_at"]) if row["created_at"] else None,
             )
             return analysis
         except Exception as e:
@@ -64,7 +64,7 @@ class AnalysisRepository:
                     analysis_id=row["analysisId"],
                     analysis_name=row["analysis_name"],
                     dependency_filename=row["dependency_filename"],
-                    created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
+                    created_at=parse_sqlite_timestamp(row["created_at"]) if row["created_at"] else None,
                 )
                 for row in rows
             ]

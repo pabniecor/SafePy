@@ -64,7 +64,7 @@ python main.py
 
 ## Empaquetado
 
-Si se desea generar de nuevo el ejecutable a partir del código fuente, puede utilizarse PyInstaller para empaquetar la aplicación:
+Si se desea generar un ejecutable a partir del código fuente, puede utilizarse PyInstaller para empaquetar la aplicación:
 
 ```bash
 pyinstaller safepy.spec
